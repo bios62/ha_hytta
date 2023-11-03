@@ -4,8 +4,9 @@ import sys
 import urllib.parse
 import os.path
 from tplib3 import *
-from commonV2 import *
-from rpiglobals import rpiInitVariables
+from common import *
+
+# from rpiglobals import rpiInitVariables
 import datetime
 import pytz
 from datetime import datetime
