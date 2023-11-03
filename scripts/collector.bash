@@ -9,6 +9,7 @@ SCRIPT=`basename $0 |cut -f 1 -d '.'`
 LOGDIR=`cat /home/pi/conf/siteconfig.json | jq '.logDirectory' | sed 's/"//g'`
 LOGFILE=${LOGDIR}/${SCRIPT}_${uday}.log
 CONFIGFILE=/home/pi/conf/siteconfig.json
+PYSCRIPT=collector.py
 date >> $LOGFILE
 #
 # setup environment
@@ -18,4 +19,4 @@ source /home/pi//bin/activate
 # Run python script
 #
 cd /home/pi/python-scripts
-python3 collector.py --configfile $CONFIGFILE --debug 0 >>$LOGFILE
+python3 $PYSCRIPT --configfile $CONFIGFILE --debug 0 >>$LOGFILE

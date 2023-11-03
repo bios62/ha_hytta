@@ -10,11 +10,12 @@ LOGDIR=`cat /home/pi/conf/siteconfig.json | jq '.logDirectory' | sed 's/"//g'`
 LOGFILE=${LOGDIR}/${SCRIPT}_${uday}.log
 CONFIGFILE=/home/pi/conf/siteconfig.json
 FILE=`cat /home/pi/conf/siteconfig.json | jq '.remotetempfile' | sed 's/"//g'`
+PYSCRIPT=getds1820.py
 date >> $LOGFILE
 #
 # setup environment
 #
-REMTEMP=`sshpass -f /home/pi/conf/remotepwd ssh pi@stue-pi "python /home/pi/python-scripts/getds1820V2.py --tempfile - 2>/dev/null"`
+REMTEMP=`sshpass -f /home/pi/conf/remotepwd ssh pi@stue-pi "python /home/pi/python-scripts/$PYSCRIP --tempfile - 2>/dev/null"`
 if [ $? -ne 0 ]
 then
   rm $FILE

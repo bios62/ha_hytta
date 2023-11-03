@@ -3,10 +3,11 @@
 CONFIGFILE=/home/pi/conf/siteconfig.json
 SOCKETLISTDIR=`cat $CONFIGFILE | jq '.logDirectory' | sed 's/"//g'`
 SOCKETS=` cat $SOCKETLISTDIR/tpsockets | cut -d ' ' -f 1` 
+PYSCRIPT=tplink.py
 source /home/pi/tplink_venv_py27/bin/activate
 for I in $SOCKETS
 do
-RESULT=`python2 /home/pi/python-scripts/tplink.py -t $I -c info`
+RESULT=`python2 /home/pi/python-scripts/$PYSCRIPT -t $I -c info`
 if [ $? -eq 0 ]
 then
   # a socket for the given IP address is found
