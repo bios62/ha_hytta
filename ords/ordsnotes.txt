@@ -1,0 +1,371 @@
+
+BEGIN
+  ORDS.enable_schema(
+    p_enabled             => TRUE,
+    p_schema              => 'IOT',
+    p_url_mapping_type    => 'BASE_PATH',
+    p_url_mapping_pattern => 'iot',
+    p_auto_rest_auth      => FALSE
+  );
+    
+  COMMIT;
+END;
+/
+
+select tg.groupid,groupname,membername,lowtemp,hightemp,selectedtemp from tempgroups tg,tempgroupmembers tgm 
+where tg.groupid=tgm.groupid;
+
+
+BEGIN
+  ORDS.define_module(
+    p_module_name    => 'iotv1',
+    p_base_path      => 'iotv1/',
+    p_items_per_page => 0);
+  
+  ORDS.define_template(
+   p_module_name    => 'iotv1',
+   p_pattern        => 'groupmembers/');
+
+  ORDS.define_handler(
+    p_module_name    => 'iotv1',
+    p_pattern        => 'groupmembers/',
+    p_method         => 'GET',
+    p_source_type    => ORDS.source_type_collection_feed,
+    p_source         => 'select tg.groupid,groupname,membername,lowtemp,hightemp,selectedtemp from tempgroups tg,tempgroupmembers tgm where tg.groupid=tgm.groupid',
+    p_items_per_page => 0);
+    
+  ORDS.define_template(
+    p_module_name    => 'iotv1',
+    p_pattern        => 'groupconfig/');
+
+  ORDS.define_handler(
+    p_module_name    => 'iotv1',
+    p_pattern        => 'groupconfig/',
+    p_method         => 'GET',
+    p_source_type    => ORDS.source_type_collection_feed,
+    p_source         => 'select groupid,groupname,lowtemp low,hightemp high,selectedtemp from tempgroups',
+    p_items_per_page => 0);
+  
+  ORDS.define_template(
+    p_module_name    => 'iotv1',
+    p_pattern        => 'iotstats/:siteid');
+
+  ORDS.define_handler(
+    p_module_name    => 'iotv1',
+    p_pattern        => 'iotstats/:siteid',
+    p_method         => 'GET',
+    p_source_type    => ORDS.source_type_collection_feed,
+    p_source         => 'select l.logname name,l.logvalue value,l.logtime logtime from iotlogs  l where l.siteid=:siteid and l.logtime = (select max(l2.logtime) from iotlogs l2 where l2.logname = l.logname)',
+    p_items_per_page => 0);
+  COMMIT;
+END;
+/
+
+begin
+  ORDS.define_template(
+    p_module_name    => 'iotv1',
+    p_pattern        => 'settemp/');
+
+  ORDS.define_handler(
+    p_module_name    => 'iotv1',
+    p_pattern        => 'settemp/',
+    p_method         => 'POST',
+    p_source_type    => 'plsql/block',  -- needs to be correct
+    p_source         => 'begin settemp(:groupid,:selectedtemp,:p_status);commit; end;',
+    p_items_per_page => 0);		
+  ORDS.DEFINE_PARAMETER(
+      p_module_name        => 'iotv1',
+      p_pattern            => 'settemp/',
+      p_method             => 'POST',
+      p_name               => 'sqlstatus',
+      p_bind_variable_name => 'p_status',
+      p_source_type        => 'RESPONSE',
+      p_param_type         => 'INT',
+      p_access_method      => 'OUT'); 
+   ORDS.DEFINE_PARAMETER(
+      p_module_name        => 'iotv1',
+      p_pattern            => 'settemp/',
+      p_method             => 'POST',
+      p_name               => 'groupid',
+      p_bind_variable_name => 'groupid',
+      p_source_type        => 'HEADER', -- even for post data payload
+      p_param_type         => 'INT',
+      p_access_method      => 'IN');
+	ORDS.DEFINE_PARAMETER(
+      p_module_name        => 'iotv1',
+      p_pattern            => 'settemp/',
+      p_method             => 'POST',
+      p_name               => 'selectedtemp',
+      p_bind_variable_name => 'selectedtemp',
+      p_source_type        => 'HEADER',
+      p_param_type         => 'STRING',
+      p_access_method      => 'IN');
+end;
+/
+
+https://tn1tv18ynzxubz5-iosp.adb.eu-frankfurt-1.oraclecloudapps.com/ords/iot/iotv1/groups/
+
+create or replace procedure settemp ( p_groupid in integer, p_selectedtemp in varchar2, p_status out integer ) is
+begin
+    p_status:=200;
+    update tempgroups set selectedtemp=p_selectedtemp where groupid=p_groupid;
+	exception when others then
+		p_status:=sqlcode;
+end;
+/
+
+DECLARE
+  PRAGMA AUTONOMOUS_TRANSACTION;
+BEGIN
+
+    ORDS.ENABLE_OBJECT(p_enabled => TRUE,
+                       p_schema => 'IOT',
+                       p_object => 'IOTLOGS',
+                       p_object_type => 'TABLE',
+                       p_object_alias => 'iotlogs',
+                       p_auto_rest_auth => FALSE);
+
+    commit;
+
+END;
+
+https://tn1tv18ynzxubz5-iosp.adb.eu-frankfurt-1.oraclecloudapps.com/ords/iot/iotlogs/1
+
+Deployment of ORDS, for Producton use, 
+Cloud security and identity architecture
+Roadmap and versions. Move from kerberos to Azure AD, Oauth Open IDConnect.
+Different identity providers.  How to authenticate. 
+
+How do we integrate with Azure AD. 
+
+1) roadmap and Oracle investment
+REST with ORDS vs. .NET applications by them selves? Metadata 
+2) Indentity management
+3) Best way to opertionalize, supported WLS licens included or not? verify
+4) containerized version? Docker containers., Graal? Devops integration
+5) Licening implications
+
+SR for production case. 
+
+https://www.thatjeffsmith.com/archive/tag/ords/
+
+From SQLdeveloper:
+-- Generated by Oracle SQL Developer REST Data Services 19.2.1.247.2212
+-- Exported REST Definitions from ORDS Schema Version 19.4.1.r0572045
+-- Schema: IOT   Date: Mon Mar 16 18:42:22 CET 2020
+--
+BEGIN
+  ORDS.ENABLE_SCHEMA(
+      p_enabled             => TRUE,
+      p_schema              => 'IOT',
+      p_url_mapping_type    => 'BASE_PATH',
+      p_url_mapping_pattern => 'iot',
+      p_auto_rest_auth      => FALSE);    
+
+  ORDS.DEFINE_MODULE(
+      p_module_name    => 'iotv1',
+      p_base_path      => '/iotv1/',
+      p_items_per_page =>  0,
+      p_status         => 'PUBLISHED',
+      p_comments       => NULL);      
+  ORDS.DEFINE_TEMPLATE(
+      p_module_name    => 'iotv1',
+      p_pattern        => 'groupconfig/',
+      p_priority       => 0,
+      p_etag_type      => 'HASH',
+      p_etag_query     => NULL,
+      p_comments       => NULL);
+  ORDS.DEFINE_HANDLER(
+      p_module_name    => 'iotv1',
+      p_pattern        => 'groupconfig/',
+      p_method         => 'GET',
+      p_source_type    => 'json/collection',
+      p_items_per_page =>  0,
+      p_mimes_allowed  => '',
+      p_comments       => NULL,
+      p_source         => 
+'select groupname,lowtemp low,hightemp high,selectedtemp from tempgroups'
+      );
+  ORDS.DEFINE_TEMPLATE(
+      p_module_name    => 'iotv1',
+      p_pattern        => 'groupmembers/',
+      p_priority       => 0,
+      p_etag_type      => 'HASH',
+      p_etag_query     => NULL,
+      p_comments       => NULL);
+  ORDS.DEFINE_HANDLER(
+      p_module_name    => 'iotv1',
+      p_pattern        => 'groupmembers/',
+      p_method         => 'GET',
+      p_source_type    => 'json/collection',
+      p_items_per_page =>  0,
+      p_mimes_allowed  => '',
+      p_comments       => NULL,
+      p_source         => 
+'select tg.groupid,groupname,membername,lowtemp,hightemp,selectedtemp from tempgroups tg,tempgroupmembers tgm where tg.groupid=tgm.groupid'
+      );
+  ORDS.DEFINE_TEMPLATE(
+      p_module_name    => 'iotv1',
+      p_pattern        => 'settemp/',
+      p_priority       => 0,
+      p_etag_type      => 'HASH',
+      p_etag_query     => NULL,
+      p_comments       => NULL);
+  ORDS.DEFINE_HANDLER(
+      p_module_name    => 'iotv1',
+      p_pattern        => 'settemp/',
+      p_method         => 'POST',
+      p_source_type    => 'plsql/block',
+      p_items_per_page =>  0,
+      p_mimes_allowed  => 'application/json',
+      p_comments       => NULL,
+      p_source         => 
+'begin settemp(:groupid,:selectedtemp,:p_status);commit; end;'
+      );
+  ORDS.DEFINE_PARAMETER(
+      p_module_name        => 'iotv1',
+      p_pattern            => 'settemp/',
+      p_method             => 'POST',
+      p_name               => 'sqlstatus',
+      p_bind_variable_name => 'p_status',
+      p_source_type        => 'HEADER',
+      p_param_type         => 'INT',
+      p_access_method      => 'OUT',
+      p_comments           => NULL);      
+
+
+  COMMIT; 
+END;
+
+
+--------------------------------------------------------
+--  File created - tirsdag-mars-17-2020   
+--------------------------------------------------------
+--------------------------------------------------------
+--  DDL for Table TEMPGROUPS
+--------------------------------------------------------
+
+  CREATE TABLE "IOT"."TEMPGROUPS" 
+   (	"GROUPID" NUMBER(*,0), 
+	"GROUPNAME" VARCHAR2(20 BYTE) COLLATE "USING_NLS_COMP", 
+	"LOWTEMP" NUMBER(5,2), 
+	"HIGHTEMP" NUMBER(5,2), 
+	"SELECTEDTEMP" VARCHAR2(1 BYTE) COLLATE "USING_NLS_COMP", 
+	"INUSE" VARCHAR2(1 BYTE) COLLATE "USING_NLS_COMP" DEFAULT 'N'
+   )  DEFAULT COLLATION "USING_NLS_COMP" SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 
+ NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1
+  BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "DATA" ;
+REM INSERTING into IOT.TEMPGROUPS
+SET DEFINE OFF;
+Insert into IOT.TEMPGROUPS (GROUPID,GROUPNAME,LOWTEMP,HIGHTEMP,SELECTEDTEMP,INUSE) values ('1','Stue','5','20','L','N');
+Insert into IOT.TEMPGROUPS (GROUPID,GROUPNAME,LOWTEMP,HIGHTEMP,SELECTEDTEMP,INUSE) values ('2','Stue Ekstra','5','20','L','N');
+Insert into IOT.TEMPGROUPS (GROUPID,GROUPNAME,LOWTEMP,HIGHTEMP,SELECTEDTEMP,INUSE) values ('3','Gang','5','20','L','N');
+Insert into IOT.TEMPGROUPS (GROUPID,GROUPNAME,LOWTEMP,HIGHTEMP,SELECTEDTEMP,INUSE) values ('4','Soverom','5','20','L','N');
+--------------------------------------------------------
+--  DDL for Index SYS_C0018625
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "IOT"."SYS_C0018625" ON "IOT"."TEMPGROUPS" ("GROUPID") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1
+  BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "DATA" ;
+--------------------------------------------------------
+--  Constraints for Table TEMPGROUPS
+--------------------------------------------------------
+
+  ALTER TABLE "IOT"."TEMPGROUPS" ADD PRIMARY KEY ("GROUPID")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1
+  BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "DATA"  ENABLE;
+  ALTER TABLE "IOT"."TEMPGROUPS" ADD CONSTRAINT "C_INUSE" CHECK (upper(inuse) in ('Y','N')) ENABLE;
+  ALTER TABLE "IOT"."TEMPGROUPS" MODIFY ("GROUPNAME" NOT NULL ENABLE);
+  ALTER TABLE "IOT"."TEMPGROUPS" MODIFY ("SELECTEDTEMP" NOT NULL ENABLE);
+  ALTER TABLE "IOT"."TEMPGROUPS" MODIFY ("INUSE" NOT NULL ENABLE);
+  ALTER TABLE "IOT"."TEMPGROUPS" ADD CONSTRAINT "C_SELECTEDTEMP" CHECK (upper(selectedtemp) in ('H','L')) ENABLE;
+
+--------------------------------------------------------
+--  File created - tirsdag-mars-17-2020   
+--------------------------------------------------------
+--------------------------------------------------------
+--  DDL for Table TEMPGROUPMEMBERS
+--------------------------------------------------------
+
+  CREATE TABLE "IOT"."TEMPGROUPMEMBERS" 
+   (	"TGMID" NUMBER(*,0), 
+	"GROUPID" NUMBER(*,0), 
+	"MEMBERNAME" VARCHAR2(20 BYTE) COLLATE "USING_NLS_COMP"
+   )  DEFAULT COLLATION "USING_NLS_COMP" SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 
+ NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1
+  BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "DATA" ;
+REM INSERTING into IOT.TEMPGROUPMEMBERS
+SET DEFINE OFF;
+Insert into IOT.TEMPGROUPMEMBERS (TGMID,GROUPID,MEMBERNAME) values ('1','1','stue1');
+Insert into IOT.TEMPGROUPMEMBERS (TGMID,GROUPID,MEMBERNAME) values ('2','1','stue2');
+Insert into IOT.TEMPGROUPMEMBERS (TGMID,GROUPID,MEMBERNAME) values ('3','2','stue3');
+Insert into IOT.TEMPGROUPMEMBERS (TGMID,GROUPID,MEMBERNAME) values ('4','3','gang');
+Insert into IOT.TEMPGROUPMEMBERS (TGMID,GROUPID,MEMBERNAME) values ('5','4','tina');
+--------------------------------------------------------
+--  DDL for Index SYS_C0018626
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "IOT"."SYS_C0018626" ON "IOT"."TEMPGROUPMEMBERS" ("TGMID") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1
+  BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "DATA" ;
+--------------------------------------------------------
+--  Constraints for Table TEMPGROUPMEMBERS
+--------------------------------------------------------
+
+  ALTER TABLE "IOT"."TEMPGROUPMEMBERS" ADD PRIMARY KEY ("TGMID")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1
+  BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "DATA"  ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table TEMPGROUPMEMBERS
+--------------------------------------------------------
+
+  ALTER TABLE "IOT"."TEMPGROUPMEMBERS" ADD CONSTRAINT "FK_GROUPS" FOREIGN KEY ("GROUPID")
+	  REFERENCES "IOT"."TEMPGROUPS" ("GROUPID") ENABLE;
+	  
+
+
+curl -L -X GET -H 'Content-Type: application/vnd.oracle.resource+json' http://localhost:8080/ords/iot/iotv1/groupconfig/ | jq
+
+
+https://tn1tv18ynzxubz5-iosp.adb.eu-frankfurt-1.oraclecloudapps.com/ords/iot/iotv1/iotstats/hytta
+
+http://130.61.75.69:8080/ords/iot/iotv1/settemp/    {"groupid":"1","selectedtemp":"H"}
+
+http://130.61.75.69:8080/ords/iot/open-api-catalog/iotv1/
+
+https://tn1tv18ynzxubz5-iosp.adb.eu-frankfurt-1.oraclecloudapps.com/ords/iot/iotv1/groupconfig/
+
+
+
+[oracle@apex-evry ords]$ java -jar ords.war user ords_admin "Listener Administrator"
+Enter a password for user ords_admin:
+Confirm password for user ords_admin:
+Mar 25, 2020 3:30:57 PM oracle.dbtools.standalone.ModifyUser execute
+INFO: Created user: ords_admin in file: /home/oracle/orabase/product/12.2.0/ords/ords/credentials
+
+
+Post http://130.61.75.69:8080/ords/holab/emp/    Content-type application/vnd.oracle.resource+json;type=filter-form  {"mgr":"7698"}
+GET http://130.61.75.69:8080/ords/holab01/dept/
+
+ 
