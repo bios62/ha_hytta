@@ -1,4 +1,3 @@
-
 #
 # TP-Link Wi-Fi Smart Plug Protocol Client
 # For use with TP-Link HS-100 or HS-110
@@ -26,51 +25,69 @@ import argparse
 from struct import pack
 from pprint import pprint
 from tplib import *
+
 version = 0.2
 
 # Predefined Smart Plug Commands
 # For a full list of commands, consult tplink_commands.txt
-commands = {'info'     : '{"system":{"get_sysinfo":{}}}',
-			'on'       : '{"system":{"set_relay_state":{"state":1}}}',
-			'off'      : '{"system":{"set_relay_state":{"state":0}}}',
-			'cloudinfo': '{"cnCloud":{"get_info":{}}}',
-			'wlanscan' : '{"netif":{"get_scaninfo":{"refresh":0}}}',
-			'time'     : '{"time":{"get_time":{}}}',
-			'schedule' : '{"schedule":{"get_rules":{}}}',
-			'countdown': '{"count_down":{"get_rules":{}}}',
-			'antitheft': '{"anti_theft":{"get_rules":{}}}',
-			'reboot'   : '{"system":{"reboot":{"delay":1}}}',
-			'reset'    : '{"system":{"reset":{"delay":1}}}',
-			'energy'   : '{"emeter":{"get_realtime":{}}}'
+commands = {
+    "info": '{"system":{"get_sysinfo":{}}}',
+    "on": '{"system":{"set_relay_state":{"state":1}}}',
+    "off": '{"system":{"set_relay_state":{"state":0}}}',
+    "cloudinfo": '{"cnCloud":{"get_info":{}}}',
+    "wlanscan": '{"netif":{"get_scaninfo":{"refresh":0}}}',
+    "time": '{"time":{"get_time":{}}}',
+    "schedule": '{"schedule":{"get_rules":{}}}',
+    "countdown": '{"count_down":{"get_rules":{}}}',
+    "antitheft": '{"anti_theft":{"get_rules":{}}}',
+    "reboot": '{"system":{"reboot":{"delay":1}}}',
+    "reset": '{"system":{"reset":{"delay":1}}}',
+    "energy": '{"emeter":{"get_realtime":{}}}',
 }
 
 # Encryption and Decryption of TP-Link Smart Home Protocol
 
 # Parse commandline arguments
-parser = argparse.ArgumentParser(description="TP-Link Wi-Fi Smart Plug Client v" + str(version))
-parser.add_argument("-t", "--target", metavar="<hostname>", required=True, help="Target hostname or IP address", type=validHostname)
-group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument("-c", "--command", metavar="<command>", help="Preset command to send. Choices are: "+", ".join(commands), choices=commands)
-group.add_argument("-j", "--json", metavar="<JSON string>", help="Full JSON string of command to send")
-args = parser.parse_args()
+args = argparse.ArgumentParser(
+    description="TP-Link Wi-Fi Smart Plug Client v" + str(version)
+)
+args.add_argument(
+    "-t",
+    "--target",
+    metavar="<hostname>",
+    required=True,
+    help="Target hostname or IP address",
+    type=validHostname,
+)
+group = args.add_mutually_exclusive_group(required=True)
+group.add_argument(
+    "-c",
+    "--command",
+    metavar="<command>",
+    help="Preset command to send. Choices are: " + ", ".join(commands),
+    choices=commands,
+)
+group.add_argument(
+    "-j", "--json", metavar="<JSON string>", help="Full JSON string of command to send"
+)
+args = args.parse_args()
 
 
 # Set target IP, port and command to send
 ip = args.target
 port = 9999
 if args.command is None:
-	cmd = args.json
+    cmd = args.json
 else:
-	cmd = commands[args.command]
+    cmd = commands[args.command]
 
 # Send command and receive reply
 
-print ("Sent:     ", cmd)
-result=do_tplink(ip,cmd,port)
-#print ("Received: ", decrypt(data[4:]))
+print("Sent:     ", cmd)
+result = do_tplink(ip, cmd, port)
+# print ("Received: ", decrypt(data[4:]))
 print(result)
 for line in result:
-	print(line)
-#	print(type(result))
-#	print(result)
-
+    print(line)
+# 	print(type(result))
+# 	print(result)
