@@ -12,7 +12,7 @@ import traceback
 # import commonV2
 from struct import pack
 from pprint import pprint
-from tplib3 import *
+from tplib import *
 import platform
 
 # tpscan

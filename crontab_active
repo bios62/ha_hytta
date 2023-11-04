@@ -1,0 +1,11 @@
+4,9,14,19,24,29,34,39,44,49,54,59 * * * * /home/pi/scripts/saveip.bash
+#0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57 * * * * bash /home/pi/scripts/termostat.bash
+0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57 * * * * bash /home/pi/scripts/collector.bash
+* * * * * bash /home/pi/scripts/getlocaltemp.bash
+#* * * * * bash /home/pi/scripts/getremotetemp.bash
+15,45 * * * * bash /home/pi/scripts/tpscan3.bash
+#15,45 * * * * bash /home/pi/scripts/updategroupconfig.bash
+###3,18,33,48 * * * * date >>/home/pi/logs/tpstatus;bash /home/pi/scripts/termostat.bash >>/home/pi/logs/tpstatus
+##8  * * * * bash /home/pi/scripts/weewx.sh
+###15,45 * * * * /home/pi/scripts/wee_start.sh
+

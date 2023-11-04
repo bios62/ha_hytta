@@ -14,7 +14,7 @@ date >> $LOGFILE
 #
 # setup environment
 #
-source /home/pi//bin/activate
+source /home/pi/py39/bin/activate
 #
 # Run python script
 #

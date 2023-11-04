@@ -15,10 +15,12 @@ date >> $LOGFILE
 #
 # setup environment
 #
-REMTEMP=`sshpass -f /home/pi/conf/remotepwd ssh pi@stue-pi "python /home/pi/python-scripts/$PYSCRIP --tempfile - 2>/dev/null"`
+#REMTEMP=`sshpass -f /home/pi/conf/remotepwd ssh pi@stue-pi "python /home/pi/python-scripts/$PYSCRIP --tempfile - 2>/dev/null" | grep '"temp"'`
+REMTEMP=`sshpass -f /home/pi/conf/remotepwd ssh pi@stue-pi "bash /home/pi/scripts/gettemp.bash 2>/dev/null"`
 if [ $? -ne 0 ]
 then
-  rm $FILE
+  rm $FILE >>$LOGFILE
+  echo "Remote command failed" >>$LOGFILE
   exit $?
 fi
 #JSONTEMP=`echo '{"temp":"'${REMTEMP}'"}'`
