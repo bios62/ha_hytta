@@ -8,7 +8,7 @@ import json
 import platform
 import urllib.parse
 from sqlite3 import Error
-from tplib3 import *
+from tplib import *
 
 # from rpiglobals import rpiInitVariables
 from commonV2 import *
@@ -33,6 +33,7 @@ import argparse
 #   12/2-23  Disabled IP ipaddress 2.
 #   14/2-23 removed need for rpiglobals, included in commonV2
 #   14/2-23  Swicthed to tplib3, runs on python 3.
+#   4/11-23  renamed to tplib when migrating to git
 # Usage:
 # python collector
 #
