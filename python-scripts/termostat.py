@@ -3,7 +3,7 @@ import json
 import sys
 import urllib.parse
 import os.path
-from tplib3 import *
+from tplib import *
 from common import *
 
 # from rpiglobals import rpiInitVariables
