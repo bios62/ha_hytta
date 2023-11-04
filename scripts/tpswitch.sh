@@ -30,9 +30,9 @@ then
   fi
   if [ "$RELAY" != "" ]
   then
-    python $PYSCRIPT_HOME/tplink3.py -t $IP -j $RELAY
+    python $PYSCRIPT_HOME/tplink.py -t $IP -j $RELAY
   fi
-  python $PYSCRIPT_HOME/tplink3.py -t $IP -c info 
+  python $PYSCRIPT_HOME/tplink.py -t $IP -c info 
 else
   echo "ukjent plassering"
   exit 1
