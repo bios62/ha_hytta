@@ -16,4 +16,5 @@ date >> $LOGFILE
 LOCALTEMPFILE=`cat /home/pi/conf/siteconfig.json | jq '.localtempfile' | sed 's/"//g'`
 #sudo bash -c "source /home/pi/tplink_env/bin/activate;python3 /home/pi/python-scripts/getds1820.py --tempfile $LOCALTEMPFILE.tmp" >>$LOGFILE
 sudo bash -c "source /home/pi/py39/bin/activate;python3 /home/pi/python-scripts/getds1820.py --tempfile $LOCALTEMPFILE.tmp" >>$LOGFILE
-sudo cp $LOCALTEMPFILE.tmp $LOCALTEMPFILE;chown pi:pi $LOCALTEMPFILE
+sudo cp $LOCALTEMPFILE.tmp $LOCALTEMPFILE
+sudo ZZchown pi:pi $LOCALTEMPFILE
