@@ -52,6 +52,14 @@ sudo modprobe w1-gpio
 4\. Then enter sudo modprobe w1-therm
 
 https://www.circuitbasics.com/raspberry-pi-ds18b20-temperature-sensor-tutorial/
+tmpfs /u01/iot tmpfs nodev,nosuid,size=1000M 0 0
+
+mkdir -p /u01/iot
+mount -a
+
+Linux RAM Disk
+==============
+/etc/fstab
 
 Data modell
 ===========
