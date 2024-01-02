@@ -1,7 +1,7 @@
 Changelog
 =========
 
-Last updated: 21/8-2022
+2/1-24: removed py2 requirement
 
 Connections
 ===========
