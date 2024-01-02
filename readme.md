@@ -23,6 +23,7 @@ Python3
 sudo apt-get install python
 
 python2
+As of October 2023, Python2 is no longer required
 
 curl [https://bootstrap.pypa.io/pip/2.7/get-pip.py --output
 get-pip.py](https://bootstrap.pypa.io/pip/2.7/get-pip.py%20--output%20get-pip.py)
