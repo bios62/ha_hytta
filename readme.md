@@ -36,6 +36,16 @@ sudo apt-get install python3
 
 virtualenv -p /usr/bin/python2 tplink\_venv
 
+## PIP Insalls 
+pip install pytz
+
+## OS INstall
+
+sudo apt-get sshpass
+vi /etc/hosts     add stue-pi
+
+
+
 DS1820 temp sensor
 
 1\. At the command prompt, enter sudo nano /boot/config.txt, then add
